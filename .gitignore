@@ -1,0 +1,33 @@
+# Dataset files (too large for GitHub)
+*.zip
+*.tar.gz
+*.pt
+
+# CIFAR-10 raw data
+part1_cifar10/data/cifar-10-batches-py/
+part1_cifar10/data/filtered/
+
+# Guitar/Sitar image dataset
+part2_guitar_sitar/data/
+
+# Model weights
+*.pth
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+logs/
+
+# Outputs
+part1_cifar10/outputs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
