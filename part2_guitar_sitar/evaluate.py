@@ -46,11 +46,20 @@ def evaluate():
     acc = accuracy_score(all_labels, all_preds)
     prec = precision_score(all_labels, all_preds, average='macro')
     rec = recall_score(all_labels, all_preds, average='macro')
+    prec_per_class = precision_score(all_labels, all_preds, average=None)
+    rec_per_class = recall_score(all_labels, all_preds, average=None)
     cm = confusion_matrix(all_labels, all_preds)
     
-    print(f"Accuracy: {acc*100:.2f}%")
-    print(f"Precision: {prec*100:.2f}%")
-    print(f"Recall: {rec*100:.2f}%")
+    print(f"\nOverall Metrics (macro-averaged):")
+    print(f"  Accuracy:  {acc*100:.2f}%")
+    print(f"  Precision: {prec*100:.2f}%")
+    print(f"  Recall:    {rec*100:.2f}%")
+    
+    print(f"\nPer-Class Breakdown:")
+    print(f"  {'Class':<15} {'Precision':>10} {'Recall':>10}")
+    print(f"  {'-'*35}")
+    for i, name in enumerate(class_names):
+        print(f"  {name:<15} {prec_per_class[i]*100:>9.2f}% {rec_per_class[i]*100:>9.2f}%")
     
     plt.figure(figsize=(6,5))
     sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_names, yticklabels=class_names, cmap='Blues')
@@ -58,7 +67,7 @@ def evaluate():
     plt.ylabel('Actual')
     plt.title('Confusion Matrix - Guitar vs Sitar')
     plt.savefig(CM_PATH)
-    print(f"Confusion matrix saved -> {CM_PATH}")
+    print(f"\nConfusion matrix saved -> {CM_PATH}")
 
 if __name__ == '__main__':
     evaluate()

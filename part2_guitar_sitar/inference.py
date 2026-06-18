@@ -38,11 +38,19 @@ def infer(image_path):
     prob = probs[pred.item()]*100
     
     print(f"Prediction: {cls} ({prob:.2f}%)")
+    for i, name in enumerate(class_names):
+        print(f"  {name}: {probs[i]*100:.2f}%")
     
-    # OpenCV overlay
+    # OpenCV overlay — one line per class, matching assignment example format
     cv_img = cv2.imread(image_path)
-    text = f"{cls}: {prob:.1f}%"
-    cv2.putText(cv_img, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    for i, name in enumerate(class_names):
+        p = probs[i] * 100
+        is_predicted = (i == pred.item())
+        label = "Yes" if is_predicted else "No"
+        text = f"{name}: {label} ({p:.1f}%)"
+        color = (0, 255, 0) if is_predicted else (0, 0, 255)
+        y_pos = 30 + i * 35
+        cv2.putText(cv_img, text, (10, y_pos), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
     
     out_path = f"pred_{os.path.basename(image_path)}"
     cv2.imwrite(out_path, cv_img)

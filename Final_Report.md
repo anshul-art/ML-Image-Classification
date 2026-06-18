@@ -22,8 +22,20 @@ The pretrained MobileNetV2 model was fine-tuned for 15 epochs.
 
 **Final Evaluation on Test Set (5,000 images):**
 - **Accuracy:** 80.50%
-- **Precision:** 80.95%
-- **Recall:** 80.50%
+- **Precision (macro):** 80.95%
+- **Recall (macro):** 80.50%
+
+**Per-Class Metrics:**
+
+| Class | Precision | Recall |
+|---|---|---|
+| airplane | 85.64% | 87.50% |
+| automobile | 91.14% | 91.70% |
+| bird | 72.77% | 69.80% |
+| cat | 69.11% | 66.70% |
+| deer | 86.09% | 86.80% |
+
+> **Note on Averaging:** Precision and recall are reported using **macro-averaging**, which computes the metric independently for each class and then takes the unweighted mean. This treats all classes equally regardless of sample count, which is appropriate here since the dataset is balanced (1,000 test samples per class).
 
 ![CIFAR-10 Training Plot](part1_cifar10/training_plot.png)
 ![CIFAR-10 Confusion Matrix](part1_cifar10/confusion_matrix.png)
@@ -45,13 +57,28 @@ The model was fine-tuned for 10 epochs.
 
 **Final Evaluation on Test Set (201 images):**
 - **Accuracy:** 97.01%
-- **Precision:** 97.10%
-- **Recall:** 97.00%
+- **Precision (macro):** 97.10%
+- **Recall (macro):** 97.00%
 
-![Guitar vs Sitar Training Plot](part2_guitar_sitar/training_plot.png)
+**Per-Class Metrics:**
+
+| Class | Precision | Recall |
+|---|---|---|
+| Guitar | 98.00% | 96.00% |
+| Sitar | 96.19% | 98.02% |
+
+> **Note on Averaging:** Same macro-averaging approach as Part 1. With nearly balanced test splits (100 vs 101 images), macro and weighted averages produce nearly identical results.
+
 ![Guitar vs Sitar Confusion Matrix](part2_guitar_sitar/confusion_matrix.png)
 
 ### Inference (OpenCV Overlay)
-We ran the single-image inference script on a sample from the test set. The script correctly predicted **Guitar** with **99.94%** confidence and successfully drew the label onto the image using OpenCV.
+The inference script outputs a probability for **every class** with a Yes/No label overlaid on the image using OpenCV, matching the assignment example format:
+
+```
+Guitar: Yes (99.9%)
+Sitar:  No  (0.1%)
+```
+
+The predicted class is displayed in green, and the remaining class in red, making the result immediately visually clear.
 
 ![Inference Output](pred_rProcess_Guitar_901.jpg)
