@@ -27,7 +27,7 @@ LOG_DIR    = os.path.join(SCRIPT_DIR, 'logs', 'cifar10_mobilenet')
 PLOT_PATH  = os.path.join(SCRIPT_DIR, 'training_plot.png')
 
 EPOCHS_WARMUP = 5
-EPOCHS_FINE = 10
+EPOCHS_FINE = 20
 BATCH_SIZE = 32
 LR_WARMUP = 1e-3
 LR_FINE = 1e-4

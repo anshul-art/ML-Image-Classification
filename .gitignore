@@ -4,8 +4,7 @@
 *.pt
 
 # CIFAR-10 raw data
-part1_cifar10/data/cifar-10-batches-py/
-part1_cifar10/data/filtered/
+part1_cifar10/data/
 
 # Guitar/Sitar image dataset
 part2_guitar_sitar/data/

@@ -106,7 +106,7 @@ Used a **two-phase transfer learning** approach:
 | Phase | Epochs | What's Trainable | Learning Rate | Optimizer |
 |---|:---:|---|:---:|---|
 | **Phase 1 — Warm-up** | 1 – 5 | Classifier head only (backbone frozen) | 1e-3 | Adam |
-| **Phase 2 — Fine-tuning** | 6 – 15 | Entire network (backbone unfrozen) | 1e-4 | Adam |
+| **Phase 2 — Fine-tuning** | 6 – 25 | Entire network (backbone unfrozen) | 1e-4 | Adam |
 
 **Rationale:**
 - **Phase 1:** The new classifier head has random weights. Training only the head first prevents large random gradients from corrupting the pre-trained backbone features.
@@ -136,15 +136,17 @@ To view: `tensorboard --logdir=part1_cifar10/logs/`
 
 ### 1.6 Training Results
 
-**Training curves (15 epochs — 5 warm-up + 10 fine-tune):**
+**Training curves (25 epochs — 5 warm-up + 20 fine-tune):**
 
 ![CIFAR-10 Training Plot](part1_cifar10/training_plot.png)
 
 **Observations from the plots:**
 - **Epochs 1-5 (warm-up):** Loss decreases slowly, accuracy stays around 50-55% — only the classifier head is learning.
 - **Epoch 6 (backbone unfreezes):** Visible jump — both loss drops and accuracy increases as the entire network starts adapting.
-- **Epochs 6-15 (fine-tuning):** Steady improvement. Train and validation curves track closely, indicating no severe overfitting.
-- **Final training accuracy:** ~82% | **Final validation accuracy:** ~79%
+- **Epochs 6-25 (fine-tuning):** Steady improvement. Train and validation curves track closely, indicating no severe overfitting.
+- **Final training accuracy:** ~85% | **Final validation accuracy:** ~85%
+- **Best validation accuracy:** 85.73% (at epoch 22)
+- **Loss curves converge** by epoch 25, indicating the model has nearly reached its capacity at 32×32 resolution.
 
 ---
 
@@ -156,9 +158,9 @@ To view: `tensorboard --logdir=part1_cifar10/logs/`
 
 | Metric | Score |
 |---|:---:|
-| **Accuracy** | **80.50%** |
-| **Precision** | **80.95%** |
-| **Recall** | **80.50%** |
+| **Accuracy** | **85.38%** |
+| **Precision** | **85.52%** |
+| **Recall** | **85.38%** |
 
 > Precision and recall use **macro-averaging** — computed independently for each class and then averaged with equal weight. This treats all classes equally regardless of sample count. With a balanced dataset (1,000 test samples per class), macro and weighted averages produce nearly identical results.
 
@@ -166,21 +168,23 @@ To view: `tensorboard --logdir=part1_cifar10/logs/`
 
 | Class | Precision | Recall | Observation |
 |---|:---:|:---:|---|
-| airplane | 85.64% | 87.50% | High — distinctive shape/sky background |
-| automobile | 91.14% | 91.70% | Highest — very distinctive appearance |
-| bird | 72.77% | 69.80% | Lower — small features at 32×32 |
-| cat | 69.11% | 66.70% | Lowest — easily confused with other animals |
-| deer | 86.09% | 86.80% | High — distinctive antlers/body shape |
+| airplane | 86.15% | 91.40% | High recall — distinctive shape/sky background |
+| automobile | 95.50% | 93.30% | Highest overall — very distinctive appearance |
+| bird | 82.00% | 75.60% | Lowest recall — small features at 32×32 |
+| cat | 85.42% | 79.10% | Improved significantly — still confused with animals |
+| deer | 78.55% | 87.50% | Good recall — distinctive body shape |
 
 **Confusion Matrix:**
 
 ![CIFAR-10 Confusion Matrix](part1_cifar10/confusion_matrix.png)
 
 **Key observations from the confusion matrix:**
-- **Automobile** has the strongest diagonal (876/1000 correct) — easiest to classify
-- **Bird ↔ Airplane** confusion (141 birds misclassified as airplane) — both involve sky backgrounds at 32×32
-- **Cat ↔ Bird** confusion (87 cats misclassified as bird) — small animal features blur together at low resolution
-- **Deer ↔ Bird** confusion (98 deer misclassified as bird) — animal shape similarity at 32×32
+- **Automobile** has the strongest diagonal (933/1000 correct) — easiest to classify
+- **Airplane** is close behind (914/1000 correct) with high recall (91.40%)
+- **Deer** improved significantly (875/1000 correct) compared to the 15-epoch model
+- **Bird ↔ Deer** confusion (128 birds misclassified as deer) — animal shape similarity at 32×32
+- **Cat ↔ Deer** confusion (88 cats misclassified as deer) — four-legged mammal similarity
+- **Bird** still has the lowest recall (75.60%) — the hardest class at 32×32 resolution, but improved from 65.70%
 
 ---
 
@@ -238,7 +242,7 @@ Same MobileNetV2 transfer learning approach as Part 1, with key adaptations:
 | **Classifier output** | 5 classes | 2 classes | Binary classification task |
 | **Augmentation** | RandomCrop, HFlip | HFlip, RandomRotation(10°) | Instruments can appear at slight angles |
 | **Warm-up epochs** | 5 | 3 | Smaller dataset — fewer warm-up epochs needed |
-| **Fine-tune epochs** | 10 | 7 | Smaller dataset — more epochs would risk overfitting |
+| **Fine-tune epochs** | 20 | 7 | Smaller dataset — more epochs would risk overfitting |
 | **Batch size** | 32 | 16 | 224×224 images consume more GPU memory |
 | **Dataset loader** | Custom Dataset class | `ImageFolder` | ImageFolder automatically loads from folder structure |
 
@@ -263,14 +267,14 @@ Same MobileNetV2 transfer learning approach as Part 1, with key adaptations:
 | Guitar | 98.96% | 95.00% |
 | Sitar | 95.24% | 99.01% |
 
-> **Why is Part 2 accuracy (97%) so much higher than Part 1 (80%)?**
+> **Why is Part 2 accuracy (97%) so much higher than Part 1 (85%)?**
 > 1. **Fewer classes:** 2 vs 5 — binary classification is inherently easier
 > 2. **Higher resolution:** 224×224 vs 32×32 — much more detail available for the model
 > 3. **More distinctive features:** Guitar and sitar have very different shapes and structures
 
 **Confusion Matrix:**
 
-![Guitar vs Sitar Confusion Matrix](part2_guitar_sitar/confusion_matrix.png)
+![Guitar vs Sitar Confusion Matrix](part2_guitar_sitar/confusion_matrix_sitar.png)
 
 **Observations:**
 - Only **6 total misclassifications** out of 201 test images
@@ -340,7 +344,7 @@ pip install -r requirements.txt
 ```bash
 cd part1_cifar10
 python dataset_prep.py      # Download and prepare dataset
-python train.py              # Train model (15 epochs)
+python train.py              # Train model (25 epochs)
 python evaluate.py           # Evaluate on test set
 python inference.py <image>  # Run inference on a single image
 tensorboard --logdir=logs/   # View training logs
@@ -373,7 +377,7 @@ Image Classification/
 │   ├── train.py                 # MobileNetV2 fine-tuning
 │   ├── evaluate.py              # Test set metrics + confusion matrix
 │   ├── inference.py             # Inference with OpenCV overlay
-│   └── confusion_matrix.png     # Test set confusion matrix
+│   └── confusion_matrix_sitar.png # Test set confusion matrix
 │
 ├── Final_Report.md              # This document
 ├── README.md                    # Project documentation
